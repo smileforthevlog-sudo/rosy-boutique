@@ -1,7 +1,10 @@
 import Link from "next/link";
 import ShopGrid from "@/components/ShopGrid";
 import SiteHeader from "@/components/SiteHeader";
-import { products } from "@/lib/products";
+import {
+  getActiveCategories,
+  getPublishedProducts,
+} from "@/lib/products/queries";
 
 export const metadata = {
   title: "Shop | Rosy Boutique",
@@ -9,7 +12,12 @@ export const metadata = {
     "Shop the Rosy Boutique collection of feminine, effortless styles curated in Arlington, Virginia.",
 };
 
-export default function ShopPage() {
+export default async function ShopPage() {
+  const [products, categories] = await Promise.all([
+    getPublishedProducts(),
+    getActiveCategories(),
+  ]);
+
   return (
     <main className="min-h-screen bg-[#fffdf9] text-[#181412]">
       <SiteHeader />
@@ -37,7 +45,7 @@ export default function ShopPage() {
 
       <section className="px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20">
         <div className="mx-auto max-w-[1500px]">
-          <ShopGrid products={products} />
+          <ShopGrid products={products} categories={categories} />
         </div>
       </section>
 

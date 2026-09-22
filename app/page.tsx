@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
-import { products } from "@/lib/products";
 import SiteHeader from "@/components/SiteHeader";
+import { getNewArrivals } from "@/lib/products/queries";
+import {
+  getProductAvailabilityLabel,
+  type StorefrontProduct,
+} from "@/lib/products/types";
 
 const categories = [
   {
@@ -36,7 +40,68 @@ const instagramTiles = [
   "/images/rosy/instagram-06.png",
 ];
 
-export default function Home() {
+function formatPrice(priceCents: number) {
+  return `$${(priceCents / 100).toFixed(2)}`;
+}
+
+function ProductShelf({ products }: { products: StorefrontProduct[] }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-3 gap-y-10 lg:grid-cols-4 lg:gap-x-5">
+      {products.map((product) => {
+        const image = product.images[0];
+        return (
+          <Link
+            href={`/products/${product.slug}`}
+            key={product.slug}
+            className="group"
+          >
+            <div className="relative aspect-[3/4] overflow-hidden bg-[#e9dfd6]">
+              {image ? (
+                <Image
+                  src={image.url}
+                  alt={image.altText || product.title}
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-[1.035]"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-6 text-center text-xs uppercase tracking-[0.16em] text-black/35">
+                  Image coming soon
+                </div>
+              )}
+
+              <div className="absolute left-3 top-3 bg-[#fffdf9] px-3 py-2 text-[8px] font-semibold uppercase tracking-[0.16em]">
+                {getProductAvailabilityLabel(product)}
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 translate-y-full bg-[#1f1916] py-3 text-center text-[9px] font-semibold uppercase tracking-[0.2em] text-white transition-transform duration-300 group-hover:translate-y-0">
+                View Product
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-display text-xl leading-none">
+                  {product.title}
+                </h3>
+
+                <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.18em] text-black/35">
+                  Rosy Boutique
+                </p>
+              </div>
+
+              <p className="text-xs">{formatPrice(product.price_cents)}</p>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+export default async function Home() {
+  const newArrivals = await getNewArrivals(4);
+
   return (
     <main className="min-h-screen bg-[#fffdf9] text-[#181412]">
       <SiteHeader />
@@ -136,53 +201,14 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-3 gap-y-10 lg:grid-cols-4 lg:gap-x-5">
-            {products.slice(0, 4).map((product) => (
-              <Link
-                href={`/products/${product.slug}`}
-                key={product.slug}
-                className="group"
-              >
-                <div className="relative aspect-[3/4] overflow-hidden bg-[#e9dfd6]">
-                  <Image
-                    src={product.image}
-                    alt={product.alt}
-                    fill
-                    sizes="(max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.035]"
-                    style={{
-                      objectPosition: product.position,
-                    }}
-                  />
-
-                  <div className="absolute left-3 top-3 bg-[#fffdf9] px-3 py-2 text-[8px] font-semibold uppercase tracking-[0.16em]">
-                    {product.label}
-                  </div>
-
-                  <div className="absolute bottom-0 left-0 right-0 translate-y-full bg-[#1f1916] py-3 text-center text-[9px] font-semibold uppercase tracking-[0.2em] text-white transition-transform duration-300 group-hover:translate-y-0">
-                    View Product
-                  </div>
-                </div>
-
-                <div className="mt-4 flex items-start justify-between gap-3">
-                  <div>
-                    <h3 className="font-display text-xl leading-none">
-                      {product.name}
-                    </h3>
-
-                    <p className="mt-2 text-[8px] font-semibold uppercase tracking-[0.18em] text-black/35">
-                      Rosy Boutique
-                    </p>
-                  </div>
-
-                  <p className="text-xs">
-                    {product.price}
-                  </p>
-                </div>
-              </Link>
-            ))}
+          {newArrivals.length > 0 ? (
+            <ProductShelf products={newArrivals} />
+          ) : (
+            <p className="border border-dashed border-black/15 px-6 py-14 text-center text-sm text-black/50">
+              New arrivals are coming soon.
+            </p>
+          )}
           </div>
-        </div>
       </section>
 
       {/* Shop */}

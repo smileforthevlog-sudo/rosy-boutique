@@ -2,13 +2,21 @@
 
 import { useState } from "react";
 import { useCart } from "@/components/CartProvider";
+import {
+  getProductAvailabilityLabel,
+  isProductPurchasable,
+  type ProductAvailability,
+} from "@/lib/products/types";
 
 type ProductPurchaseProps = {
   product: {
+    productId: string;
     slug: string;
     name: string;
-    price: string;
+    price_cents: number;
     image: string;
+    availability_status: ProductAvailability;
+    inventory_quantity: number;
   };
   sizes: string[];
 };
@@ -19,9 +27,11 @@ export default function ProductPurchase({
 }: ProductPurchaseProps) {
   const [selectedSize, setSelectedSize] = useState("");
   const { addItem } = useCart();
+  const purchasable = isProductPurchasable(product);
+  const availabilityLabel = getProductAvailabilityLabel(product);
 
   function handleAddToBag() {
-    if (!selectedSize) return;
+    if (!selectedSize || !purchasable) return;
 
     addItem(product, selectedSize);
   }
@@ -64,15 +74,19 @@ export default function ProductPurchase({
 
       <button
         type="button"
-        disabled={!selectedSize}
+        disabled={!selectedSize || !purchasable}
         onClick={handleAddToBag}
         className={`mt-6 w-full px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] transition ${
-          selectedSize
+          selectedSize && purchasable
             ? "bg-[#1d1816] text-white hover:bg-[#922f36]"
             : "cursor-not-allowed bg-black/10 text-black/35"
         }`}
       >
-        {selectedSize ? "Add to Bag" : "Choose a Size"}
+        {!purchasable
+          ? availabilityLabel
+          : selectedSize
+            ? "Add to Bag"
+            : "Choose a Size"}
       </button>
 
       {selectedSize && (

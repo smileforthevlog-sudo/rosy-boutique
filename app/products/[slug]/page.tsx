@@ -6,9 +6,13 @@ import { notFound } from "next/navigation";
 import ProductPurchase from "@/components/ProductPurchase";
 import SiteHeader from "@/components/SiteHeader";
 import {
-  getProductBySlug,
-  products,
-} from "@/lib/products";
+  getPublishedProductBySlug,
+  getPublishedProducts,
+} from "@/lib/products/queries";
+import {
+  getProductAvailabilityLabel,
+  isProductPurchasable,
+} from "@/lib/products/types";
 
 type ProductPageProps = {
   params: Promise<{
@@ -16,17 +20,11 @@ type ProductPageProps = {
   }>;
 };
 
-export function generateStaticParams() {
-  return products.map((product) => ({
-    slug: product.slug,
-  }));
-}
-
 export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getPublishedProductBySlug(slug);
 
   if (!product) {
     return {
@@ -35,8 +33,8 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${product.name} | Rosy Boutique`,
-    description: product.description,
+    title: `${product.title} | Rosy Boutique`,
+    description: product.short_description || product.description || undefined,
   };
 }
 
@@ -44,15 +42,21 @@ export default async function ProductPage({
   params,
 }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const [product, publishedProducts] = await Promise.all([
+    getPublishedProductBySlug(slug),
+    getPublishedProducts(),
+  ]);
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = products
+  const relatedProducts = publishedProducts
     .filter((item) => item.slug !== product.slug)
     .slice(0, 3);
+  const primaryImage = product.images[0];
+  const purchasable = isProductPurchasable(product);
+  const productLabel = getProductAvailabilityLabel(product);
 
   return (
     <main className="min-h-screen bg-[#fffdf9] text-[#181412]">
@@ -72,7 +76,7 @@ export default async function ProductPage({
           <span>/</span>
 
           <span className="text-black/60">
-            {product.name}
+            {product.title}
           </span>
         </div>
       </div>
@@ -80,48 +84,54 @@ export default async function ProductPage({
       {/* Product */}
       <section className="mx-auto grid max-w-[1500px] gap-10 px-5 pb-24 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:gap-20 lg:px-12 lg:pb-32">
         <div className="relative aspect-[3/4] overflow-hidden bg-[#eee5dd]">
-          <Image
-            src={product.image}
-            alt={product.alt}
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 58vw"
-            className="object-cover"
-            style={{
-              objectPosition: product.position,
-            }}
-          />
+          {primaryImage ? (
+            <Image
+              src={primaryImage.url}
+              alt={primaryImage.altText || product.title}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 58vw"
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center px-8 text-center text-xs uppercase tracking-[0.16em] text-black/35">
+              Image coming soon
+            </div>
+          )}
         </div>
 
         <div className="lg:sticky lg:top-[130px] lg:self-start lg:pt-10">
           <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-[#922f36]">
-            {product.label}
+            {productLabel}
           </p>
 
           <h1 className="font-display mt-4 text-5xl leading-[0.95] tracking-[-0.025em] sm:text-6xl">
-            {product.name}
+            {product.title}
           </h1>
 
           <p className="mt-5 text-sm">
-            {product.price}
+            ${(product.price_cents / 100).toFixed(2)}
           </p>
 
           <div className="my-8 h-px bg-black/10" />
 
           <p className="max-w-lg text-sm leading-7 text-black/60">
-            {product.description}
+            {product.description || product.short_description || ""}
           </p>
 
           <div className="my-8 h-px bg-black/10" />
 
           <ProductPurchase
             product={{
+              productId: product.id,
               slug: product.slug,
-              name: product.name,
-              price: product.price,
-              image: product.image,
+              name: product.title,
+              price_cents: product.price_cents,
+              image: primaryImage?.url || "",
+              availability_status: product.availability_status,
+              inventory_quantity: product.inventory_quantity,
             }}
-            sizes={product.sizes}
+            sizes={["XS", "S", "M", "L"]}
           />
 
           <div className="mt-10 border-t border-black/10">
@@ -131,7 +141,14 @@ export default async function ProductPage({
               </p>
 
               <ul className="mt-4 space-y-2 text-xs leading-6 text-black/55">
-                {product.details.map((detail) => (
+                {[
+                  product.category?.name,
+                  product.availability_status === "coming_soon"
+                    ? "Coming soon"
+                    : !purchasable
+                      ? "Currently sold out"
+                      : "Available to order",
+                ].filter(Boolean).map((detail) => (
                   <li key={detail}>
                     · {detail}
                   </li>
@@ -212,26 +229,28 @@ export default async function ProductPage({
                 className="group"
               >
                 <div className="relative aspect-[3/4] overflow-hidden bg-[#eee5dd]">
-                  <Image
-                    src={relatedProduct.image}
-                    alt={relatedProduct.alt}
-                    fill
-                    sizes="(max-width: 640px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                    style={{
-                      objectPosition:
-                        relatedProduct.position,
-                    }}
-                  />
+                  {relatedProduct.images[0] ? (
+                    <Image
+                      src={relatedProduct.images[0].url}
+                      alt={relatedProduct.images[0].altText || relatedProduct.title}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-6 text-center text-xs uppercase tracking-[0.16em] text-black/35">
+                      Image coming soon
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-4 flex justify-between gap-3">
                   <h3 className="font-display text-lg sm:text-xl">
-                    {relatedProduct.name}
+                    {relatedProduct.title}
                   </h3>
 
                   <p className="text-xs">
-                    {relatedProduct.price}
+                    ${(relatedProduct.price_cents / 100).toFixed(2)}
                   </p>
                 </div>
               </Link>

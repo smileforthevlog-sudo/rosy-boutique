@@ -44,6 +44,10 @@ export default function CartDrawer() {
     return null;
   }
 
+  function formatPrice(priceCents: number) {
+    return `$${(priceCents / 100).toFixed(2)}`;
+  }
+
   return (
     <div className="fixed inset-0 z-[100]">
       {/* Backdrop */}
@@ -138,7 +142,7 @@ export default function CartDrawer() {
                         </div>
 
                         <p className="text-xs">
-                          {item.price}
+                          {formatPrice(item.price_cents)}
                         </p>
                       </div>
 
@@ -195,7 +199,7 @@ export default function CartDrawer() {
                 </p>
 
                 <p className="font-display text-2xl">
-                  ${subtotal.toFixed(2)}
+                  {formatPrice(subtotal)}
                 </p>
               </div>
 
