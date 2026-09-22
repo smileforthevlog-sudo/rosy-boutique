@@ -1,32 +1,21 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AdminProductManager } from "@/components/AdminProductManager";
-import { createSupabaseServerClient, getSupabaseUser } from "@/lib/supabase/server";
+import { requireActiveStaff } from "@/lib/auth/admin";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Admin | Rosy Boutique",
 };
 
 export default async function AdminPage() {
-  const user = await getSupabaseUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
+  const staff = await requireActiveStaff();
 
   const supabase = await createSupabaseServerClient();
-  const { data: staffProfile } = supabase
-    ? await supabase.from("staff_profiles").select("role").eq("user_id", user.id).maybeSingle()
-    : { data: null };
-
-  if (!staffProfile) {
-    redirect("/");
-  }
 
   const { data } = supabase
     ? await supabase
         .from("products")
-        .select("id, title, slug, price_cents, inventory_quantity, status, is_featured, updated_at")
+        .select("id, title, slug, price_cents, inventory_quantity, status, featured, updated_at")
         .order("updated_at", { ascending: false })
     : { data: [] };
 
@@ -38,7 +27,7 @@ export default async function AdminPage() {
             <Link href="/" className="font-display text-3xl tracking-[0.16em] text-[var(--burgundy)]">
               ROSY
             </Link>
-            <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-black/40">Admin workspace</p>
+            <p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-black/40">{staff.role} workspace</p>
           </div>
           <Link href="/" className="text-[10px] font-semibold uppercase tracking-[0.16em] text-black/55 hover:text-[var(--burgundy)]">
             View store

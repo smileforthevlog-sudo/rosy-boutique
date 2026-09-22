@@ -10,7 +10,7 @@ type AdminProduct = {
   price_cents: number;
   inventory_quantity: number;
   status: "draft" | "published" | "archived";
-  is_featured: boolean;
+  featured: boolean;
   updated_at: string;
 };
 
@@ -24,6 +24,7 @@ export function AdminProductManager({ initialProducts }: { initialProducts: Admi
     setMessage("");
     setIsSaving(true);
     const form = new FormData(event.currentTarget);
+    const status = form.get("status") === "published" ? "published" : "draft";
 
     try {
       const supabase = createSupabaseBrowserClient();
@@ -34,10 +35,10 @@ export function AdminProductManager({ initialProducts }: { initialProducts: Admi
           slug: String(form.get("slug")),
           price_cents: Math.round(Number(form.get("price")) * 100),
           inventory_quantity: Number(form.get("inventory")),
-          status: String(form.get("status")),
+          status,
           short_description: String(form.get("short_description") || "") || null,
         })
-        .select("id, title, slug, price_cents, inventory_quantity, status, is_featured, updated_at")
+        .select("id, title, slug, price_cents, inventory_quantity, status, featured, updated_at")
         .single();
 
       if (error) {
