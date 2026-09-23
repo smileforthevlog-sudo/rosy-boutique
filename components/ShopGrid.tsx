@@ -47,7 +47,7 @@ export default function ShopGrid({
                 type="button"
                 aria-pressed={active}
                 onClick={() => setFilter(option.slug)}
-                className={`border px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] transition ${
+                className={`min-h-11 border px-4 py-2 text-[9px] font-semibold uppercase tracking-[0.16em] transition ${
                   active
                     ? "border-[#922f36] bg-[#922f36] text-white"
                     : "border-black/15 bg-transparent hover:border-black/50"

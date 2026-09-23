@@ -107,7 +107,7 @@ export default async function Home() {
 
         <div className="absolute bottom-[-20%] left-[20%] h-[500px] w-[500px] rounded-full bg-[#922f36]/15 blur-[120px]" />
 
-        <div className="absolute right-[9%] top-[7%] hidden h-[84%] w-[35%] rotate-[1deg] overflow-hidden border-[9px] border-[#fffdf9]/70 bg-white shadow-2xl lg:block">
+        <div className="absolute right-0 top-[14%] block h-[58%] w-[50%] rotate-[1deg] overflow-hidden border-[6px] border-[#fffdf9]/70 bg-white/80 opacity-75 shadow-2xl lg:right-[9%] lg:top-[7%] lg:h-[84%] lg:w-[35%] lg:border-[9px] lg:opacity-100">
           <Image
             src="/images/rosy/hero-main.png"
             alt="Rosy Boutique styled outfit"

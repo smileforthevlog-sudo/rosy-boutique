@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="mt-2 min-h-12 w-full border border-black/15 bg-transparent px-4 text-sm outline-none transition focus:border-[var(--burgundy)]"
+              className="mt-2 min-h-12 w-full border border-black/15 bg-transparent px-4 text-base outline-none transition focus:border-[var(--burgundy)]"
             />
           </label>
 
@@ -70,7 +70,7 @@ export default function AdminLoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="mt-2 min-h-12 w-full border border-black/15 bg-transparent px-4 text-sm outline-none transition focus:border-[var(--burgundy)]"
+              className="mt-2 min-h-12 w-full border border-black/15 bg-transparent px-4 text-base outline-none transition focus:border-[var(--burgundy)]"
             />
           </label>
 

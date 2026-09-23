@@ -68,7 +68,7 @@ export default function ProductPurchase({
               type="button"
               disabled={variantSoldOut}
               onClick={() => setSelectedVariant(variant)}
-              className={`border py-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition ${
+              className={`min-h-12 border px-2 py-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition ${
                 isSelected
                   ? "border-[#922f36] bg-[#922f36] text-white"
                   : variantSoldOut
@@ -86,7 +86,7 @@ export default function ProductPurchase({
         type="button"
         disabled={!purchasable || (variants.length > 0 && !selectedVariant)}
         onClick={handleAddToBag}
-        className={`mt-6 w-full px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] transition ${
+        className={`mt-6 min-h-14 w-full px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] transition ${
           purchasable && (variants.length === 0 || selectedVariant)
             ? "bg-[#1d1816] text-white hover:bg-[#922f36]"
             : "cursor-not-allowed bg-black/10 text-black/35"

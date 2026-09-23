@@ -61,7 +61,7 @@ export default function SiteHeader({
                   onClick={() => setMenuOpen(true)}
                   aria-label="Open navigation"
                   aria-expanded={menuOpen}
-                  className="flex flex-col gap-[5px] lg:hidden"
+                  className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] lg:hidden"
                 >
                   <span className="h-px w-5 bg-black" />
                   <span className="h-px w-5 bg-black" />
@@ -117,7 +117,7 @@ export default function SiteHeader({
             <button
               type="button"
               onClick={openCart}
-              className="text-[10px] font-semibold uppercase tracking-[0.16em] transition hover:text-[#922f36]"
+              className="flex min-h-11 items-center text-[10px] font-semibold uppercase tracking-[0.16em] transition hover:text-[#922f36]"
             >
               Bag
               <span className="ml-1 text-[#922f36]">

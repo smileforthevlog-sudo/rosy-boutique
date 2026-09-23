@@ -153,13 +153,13 @@ export default function CartDrawer() {
                             onClick={() =>
                               decreaseQuantity(item.slug, item.variantId)
                             }
-                            className="flex h-8 w-8 items-center justify-center text-sm transition hover:bg-black/5"
+                            className="flex h-11 w-11 items-center justify-center text-sm transition hover:bg-black/5"
                             aria-label={`Decrease ${item.name} quantity`}
                           >
                             −
                           </button>
 
-                          <span className="flex h-8 min-w-8 items-center justify-center border-x border-black/15 text-[10px]">
+                          <span className="flex h-11 min-w-9 items-center justify-center border-x border-black/15 text-[10px]">
                             {item.quantity}
                           </span>
 
@@ -168,7 +168,7 @@ export default function CartDrawer() {
                             onClick={() =>
                               increaseQuantity(item.slug, item.variantId)
                             }
-                            className="flex h-8 w-8 items-center justify-center text-sm transition hover:bg-black/5"
+                            className="flex h-11 w-11 items-center justify-center text-sm transition hover:bg-black/5"
                             aria-label={`Increase ${item.name} quantity`}
                           >
                             +
@@ -180,7 +180,7 @@ export default function CartDrawer() {
                           onClick={() =>
                             removeItem(item.slug, item.variantId)
                           }
-                          className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/40 underline underline-offset-4 transition hover:text-[#922f36]"
+                          className="min-h-11 px-2 text-[8px] font-semibold uppercase tracking-[0.16em] text-black/40 underline underline-offset-4 transition hover:text-[#922f36]"
                         >
                           Remove
                         </button>
