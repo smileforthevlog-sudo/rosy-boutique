@@ -108,7 +108,7 @@ export default function CartDrawer() {
               <div className="space-y-7">
                 {items.map((item) => (
                   <div
-                    key={`${item.slug}-${item.size}`}
+                    key={`${item.slug}-${item.variantId || "product"}`}
                     className="grid grid-cols-[105px_1fr] gap-5 border-b border-black/10 pb-7"
                   >
                     <Link
@@ -137,7 +137,7 @@ export default function CartDrawer() {
                           </Link>
 
                           <p className="mt-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-black/40">
-                            Size {item.size}
+                            {item.variantName ? `Size ${item.variantName}` : "One size"}
                           </p>
                         </div>
 
@@ -151,7 +151,7 @@ export default function CartDrawer() {
                           <button
                             type="button"
                             onClick={() =>
-                              decreaseQuantity(item.slug, item.size)
+                              decreaseQuantity(item.slug, item.variantId)
                             }
                             className="flex h-8 w-8 items-center justify-center text-sm transition hover:bg-black/5"
                             aria-label={`Decrease ${item.name} quantity`}
@@ -166,7 +166,7 @@ export default function CartDrawer() {
                           <button
                             type="button"
                             onClick={() =>
-                              increaseQuantity(item.slug, item.size)
+                              increaseQuantity(item.slug, item.variantId)
                             }
                             className="flex h-8 w-8 items-center justify-center text-sm transition hover:bg-black/5"
                             aria-label={`Increase ${item.name} quantity`}
@@ -178,7 +178,7 @@ export default function CartDrawer() {
                         <button
                           type="button"
                           onClick={() =>
-                            removeItem(item.slug, item.size)
+                            removeItem(item.slug, item.variantId)
                           }
                           className="text-[8px] font-semibold uppercase tracking-[0.16em] text-black/40 underline underline-offset-4 transition hover:text-[#922f36]"
                         >

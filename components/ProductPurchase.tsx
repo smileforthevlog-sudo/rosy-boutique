@@ -7,6 +7,7 @@ import {
   isProductPurchasable,
   type ProductAvailability,
 } from "@/lib/products/types";
+import type { ProductVariant } from "@/lib/products/types";
 
 type ProductPurchaseProps = {
   product: {
@@ -17,30 +18,35 @@ type ProductPurchaseProps = {
     image: string;
     availability_status: ProductAvailability;
     inventory_quantity: number;
+    variants: ProductVariant[];
   };
-  sizes: string[];
+  variants: ProductVariant[];
 };
 
 export default function ProductPurchase({
   product,
-  sizes,
+  variants,
 }: ProductPurchaseProps) {
-  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const { addItem } = useCart();
   const purchasable = isProductPurchasable(product);
   const availabilityLabel = getProductAvailabilityLabel(product);
 
   function handleAddToBag() {
-    if (!selectedSize || !purchasable) return;
+    if (!purchasable || (variants.length > 0 && !selectedVariant)) return;
 
-    addItem(product, selectedSize);
+    addItem({
+      ...product,
+      variantId: selectedVariant?.id || null,
+      variantName: selectedVariant?.name || null,
+    });
   }
 
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-[0.18em]">
-          Select Size
+          {variants.length > 0 ? "Select Size" : "Availability"}
         </p>
 
         <button
@@ -51,47 +57,51 @@ export default function ProductPurchase({
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
-        {sizes.map((size) => {
-          const isSelected = selectedSize === size;
+      {variants.length > 0 && <div className="grid grid-cols-4 gap-2">
+        {variants.map((variant) => {
+          const isSelected = selectedVariant?.id === variant.id;
+          const variantSoldOut = variant.inventory_quantity <= 0;
 
           return (
             <button
-              key={size}
+              key={variant.id}
               type="button"
-              onClick={() => setSelectedSize(size)}
+              disabled={variantSoldOut}
+              onClick={() => setSelectedVariant(variant)}
               className={`border py-3 text-[10px] font-semibold uppercase tracking-[0.16em] transition ${
                 isSelected
                   ? "border-[#922f36] bg-[#922f36] text-white"
-                  : "border-black/20 bg-white hover:border-black"
+                  : variantSoldOut
+                    ? "cursor-not-allowed border-black/10 bg-black/5 text-black/30"
+                    : "border-black/20 bg-white hover:border-black"
               }`}
             >
-              {size}
+              {variant.name}
             </button>
           );
         })}
-      </div>
+      </div>}
 
       <button
         type="button"
-        disabled={!selectedSize || !purchasable}
+        disabled={!purchasable || (variants.length > 0 && !selectedVariant)}
         onClick={handleAddToBag}
         className={`mt-6 w-full px-6 py-4 text-[10px] font-semibold uppercase tracking-[0.22em] transition ${
-          selectedSize && purchasable
+          purchasable && (variants.length === 0 || selectedVariant)
             ? "bg-[#1d1816] text-white hover:bg-[#922f36]"
             : "cursor-not-allowed bg-black/10 text-black/35"
         }`}
       >
         {!purchasable
           ? availabilityLabel
-          : selectedSize
+          : variants.length === 0 || selectedVariant
             ? "Add to Bag"
             : "Choose a Size"}
       </button>
 
-      {selectedSize && (
+      {selectedVariant && (
         <p className="mt-3 text-center text-[9px] uppercase tracking-[0.16em] text-black/40">
-          Selected: {selectedSize}
+          Selected: {selectedVariant.name}
         </p>
       )}
     </div>

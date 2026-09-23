@@ -10,16 +10,19 @@ import {
 
 export type CartItem = {
   productId: string;
+  variantId: string | null;
+  variantName: string | null;
   slug: string;
   name: string;
   price_cents: number;
   image: string;
-  size: string;
   quantity: number;
 };
 
 type AddItemProduct = {
   productId: string;
+  variantId: string | null;
+  variantName: string | null;
   slug: string;
   name: string;
   price_cents: number;
@@ -31,10 +34,10 @@ type CartContextValue = {
   cartCount: number;
   subtotal: number;
   isOpen: boolean;
-  addItem: (product: AddItemProduct, size: string) => void;
-  removeItem: (slug: string, size: string) => void;
-  increaseQuantity: (slug: string, size: string) => void;
-  decreaseQuantity: (slug: string, size: string) => void;
+  addItem: (product: AddItemProduct) => void;
+  removeItem: (slug: string, variantId: string | null) => void;
+  increaseQuantity: (slug: string, variantId: string | null) => void;
+  decreaseQuantity: (slug: string, variantId: string | null) => void;
   openCart: () => void;
   closeCart: () => void;
 };
@@ -82,11 +85,12 @@ function parseCart(snapshot: string): CartItem[] {
     return parsed.filter(
       (item): item is CartItem =>
         typeof item.productId === "string" &&
+        (typeof item.variantId === "string" || item.variantId === null) &&
+        (typeof item.variantName === "string" || item.variantName === null) &&
         typeof item.slug === "string" &&
         typeof item.name === "string" &&
         typeof item.price_cents === "number" &&
         typeof item.image === "string" &&
-        typeof item.size === "string" &&
         typeof item.quantity === "number",
     );
   } catch {
@@ -126,45 +130,45 @@ export default function CartProvider({
     [items],
   );
 
-  function addItem(product: AddItemProduct, size: string) {
+  function addItem(product: AddItemProduct) {
     const existingItem = items.find(
-      (item) => item.slug === product.slug && item.size === size,
+      (item) => item.slug === product.slug && item.variantId === product.variantId,
     );
     const nextItems = existingItem
       ? items.map((item) =>
-          item.slug === product.slug && item.size === size
+          item.slug === product.slug && item.variantId === product.variantId
             ? { ...item, quantity: item.quantity + 1 }
             : item,
         )
-      : [...items, { ...product, size, quantity: 1 }];
+      : [...items, { ...product, quantity: 1 }];
 
     saveCart(nextItems);
     setIsOpen(true);
   }
 
-  function removeItem(slug: string, size: string) {
+  function removeItem(slug: string, variantId: string | null) {
     saveCart(
       items.filter(
-        (item) => !(item.slug === slug && item.size === size),
+        (item) => !(item.slug === slug && item.variantId === variantId),
       ),
     );
   }
 
-  function increaseQuantity(slug: string, size: string) {
+  function increaseQuantity(slug: string, variantId: string | null) {
     saveCart(
       items.map((item) =>
-        item.slug === slug && item.size === size
+        item.slug === slug && item.variantId === variantId
           ? { ...item, quantity: item.quantity + 1 }
           : item,
       ),
     );
   }
 
-  function decreaseQuantity(slug: string, size: string) {
+  function decreaseQuantity(slug: string, variantId: string | null) {
     saveCart(
       items
         .map((item) =>
-          item.slug === slug && item.size === size
+          item.slug === slug && item.variantId === variantId
             ? { ...item, quantity: item.quantity - 1 }
             : item,
         )

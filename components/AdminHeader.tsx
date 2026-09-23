@@ -1,0 +1,5 @@
+import Link from "next/link";
+
+export default function AdminHeader({ role }: { role: "owner" | "admin" | "editor" }) {
+  return <header className="border-b border-black/10 bg-[var(--paper)]"><div className="mx-auto flex min-h-20 max-w-7xl items-center justify-between gap-5 px-5 sm:px-8"><div><Link href="/admin" className="font-display text-3xl tracking-[0.16em] text-[var(--burgundy)]">ROSY</Link><p className="mt-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-black/40">{role} workspace</p></div><nav className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.14em] text-black/55"><Link href="/admin/products" className="hidden hover:text-[var(--burgundy)] sm:block">Products</Link>{role !== "editor" && <><Link href="/admin/categories" className="hidden hover:text-[var(--burgundy)] sm:block">Categories</Link><Link href="/admin/homepage" className="hidden hover:text-[var(--burgundy)] sm:block">Homepage</Link></>}<Link href="/" className="hover:text-[var(--burgundy)]">Store</Link></nav></div></header>;
+}

@@ -107,6 +107,116 @@ export type Database = {
           },
         ];
       };
+      product_variants: {
+        Row: {
+          id: string;
+          product_id: string;
+          name: string;
+          sku: string | null;
+          inventory_quantity: number;
+          active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          product_id: string;
+          name: string;
+          sku?: string | null;
+          inventory_quantity?: number;
+          active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["product_variants"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      homepage_sections: {
+        Row: {
+          id: string;
+          key: string;
+          section_type: string;
+          eyebrow: string | null;
+          heading: string | null;
+          body: string | null;
+          cta_label: string | null;
+          cta_href: string | null;
+          image_path: string | null;
+          active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          section_type: string;
+          eyebrow?: string | null;
+          heading?: string | null;
+          body?: string | null;
+          cta_label?: string | null;
+          cta_href?: string | null;
+          image_path?: string | null;
+          active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["homepage_sections"]["Insert"]>;
+        Relationships: [];
+      };
+      homepage_section_items: {
+        Row: {
+          id: string;
+          section_id: string;
+          key: string;
+          eyebrow: string | null;
+          title: string;
+          subtitle: string | null;
+          cta_label: string | null;
+          cta_href: string | null;
+          image_path: string | null;
+          active: boolean;
+          sort_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          section_id: string;
+          key: string;
+          eyebrow?: string | null;
+          title: string;
+          subtitle?: string | null;
+          cta_label?: string | null;
+          cta_href?: string | null;
+          image_path?: string | null;
+          active?: boolean;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["homepage_section_items"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "homepage_section_items_section_id_fkey";
+            columns: ["section_id"];
+            isOneToOne: false;
+            referencedRelation: "homepage_sections";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       staff_profiles: {
         Row: {
           user_id: string;
@@ -133,6 +243,7 @@ export type Database = {
     Enums: {
       product_status: "draft" | "published" | "archived";
       staff_role: "owner" | "admin" | "editor";
+      availability_status: "in_stock" | "sold_out" | "coming_soon";
     };
     CompositeTypes: Record<string, never>;
   };

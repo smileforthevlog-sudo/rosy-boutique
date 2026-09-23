@@ -6,30 +6,14 @@ import {
   getProductAvailabilityLabel,
   type StorefrontProduct,
 } from "@/lib/products/types";
+import { getActiveHomepageSections } from "@/lib/homepage/queries";
+import { safeContentHref } from "@/lib/homepage/types";
 
-const categories = [
-  {
-    title: "Dresses",
-    subtitle: "For every plan on your calendar.",
-    image: "/images/rosy/category-dresses.png",
-    position: "50% 40%",
-    href: "/shop",
-  },
-  {
-    title: "Tops + Sets",
-    subtitle: "Easy pieces. Endless outfits.",
-    image: "/images/rosy/category-tops.png",
-    position: "50% 35%",
-    href: "/shop",
-  },
-  {
-    title: "The Rosy Edit",
-    subtitle: "Our current favorites.",
-    image: "/images/rosy/category-edit.png",
-    position: "50% 45%",
-    href: "#rosy-edit",
-  },
-];
+const homepageImageFallbacks: Record<string, string> = {
+  dresses: "/images/rosy/category-dresses.png",
+  "tops-sets": "/images/rosy/category-tops.png",
+  "rosy-edit-card": "/images/rosy/category-edit.png",
+};
 
 const instagramTiles = [
   "/images/rosy/instagram-01.png",
@@ -100,7 +84,16 @@ function ProductShelf({ products }: { products: StorefrontProduct[] }) {
 }
 
 export default async function Home() {
-  const newArrivals = await getNewArrivals(4);
+  const [newArrivals, homepageSections] = await Promise.all([
+    getNewArrivals(4),
+    getActiveHomepageSections(),
+  ]);
+  const editorialCards = homepageSections.find(
+    (section) => section.key === "homepage-editorial-cards",
+  );
+  const rosyEdit = homepageSections.find(
+    (section) => section.key === "homepage-rosy-edit",
+  );
 
   return (
     <main className="min-h-screen bg-[#fffdf9] text-[#181412]">
@@ -232,22 +225,19 @@ export default async function Home() {
         </div>
 
         <div className="mx-auto grid max-w-[1500px] gap-4 md:grid-cols-3">
-          {categories.map((category) => (
+          {editorialCards?.items.map((item) => (
             <Link
-              href={category.href}
-              key={category.title}
+              href={safeContentHref(item.ctaHref, "/shop")}
+              key={item.id}
               className="group relative overflow-hidden"
             >
               <div className="relative aspect-[4/5] overflow-hidden bg-[#ddd1c7]">
                 <Image
-                  src={category.image}
-                  alt={category.title}
+                  src={item.image.signedUrl || homepageImageFallbacks[item.key] || "/images/rosy/category-edit.png"}
+                  alt={item.title}
                   fill
                   sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  style={{
-                    objectPosition: category.position,
-                  }}
                 />
               </div>
 
@@ -255,19 +245,19 @@ export default async function Home() {
 
               <div className="absolute bottom-0 left-0 p-7 text-white sm:p-9">
                 <p className="text-[9px] font-semibold uppercase tracking-[0.24em] text-white/70">
-                  Shop
+                  {item.eyebrow || "Shop"}
                 </p>
 
                 <h3 className="font-display mt-2 text-4xl sm:text-5xl">
-                  {category.title}
+                  {item.title}
                 </h3>
 
                 <p className="mt-2 text-xs text-white/75">
-                  {category.subtitle}
+                  {item.subtitle}
                 </p>
 
                 <span className="mt-6 inline-block border-b border-white pb-1 text-[9px] font-semibold uppercase tracking-[0.2em]">
-                  Explore
+                  {item.ctaLabel || "Explore"}
                 </span>
               </div>
             </Link>
@@ -276,18 +266,17 @@ export default async function Home() {
       </section>
 
       {/* Rosy Edit */}
-      <section
+      {rosyEdit?.active && <section
         id="rosy-edit"
         className="scroll-mt-[110px] grid lg:grid-cols-2"
       >
         <div className="relative min-h-[560px] overflow-hidden bg-[#4c3931] lg:min-h-[720px]">
           <Image
-            src="/images/rosy/rosy-edit.png"
-            alt="Rosy Boutique editorial styling"
+            src={rosyEdit.image.signedUrl || "/images/rosy/rosy-edit.png"}
+            alt={rosyEdit.heading || "Rosy Boutique editorial styling"}
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover"
-            style={{ objectPosition: "50% 28%" }}
           />
 
           <div className="absolute inset-0 bg-black/10" />
@@ -296,31 +285,28 @@ export default async function Home() {
         <div className="flex items-center bg-[#922f36] px-7 py-20 text-white sm:px-12 lg:px-20">
           <div className="max-w-[530px]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/55">
-              Our world
+              {rosyEdit.eyebrow}
             </p>
 
             <h2 className="font-display mt-5 text-6xl leading-[0.82] tracking-[-0.03em] sm:text-7xl lg:text-[90px]">
-              The
-              <br />
-              Rosy Edit
+              {rosyEdit.heading}
             </h2>
 
             <p className="mt-8 max-w-md text-sm leading-7 text-white/70">
-              Inspiration from the pieces, people, places, and moments
-              we&apos;re loving right now.
+              {rosyEdit.body}
             </p>
 
             <a
-              href="https://www.instagram.com/rosyboutiqueva/"
-              target="_blank"
-              rel="noreferrer"
+              href={safeContentHref(rosyEdit.ctaHref, "https://www.instagram.com/rosyboutiqueva/")}
+              target={rosyEdit.ctaHref?.startsWith("https://") ? "_blank" : undefined}
+              rel={rosyEdit.ctaHref?.startsWith("https://") ? "noreferrer" : undefined}
               className="mt-9 inline-block border-b border-white pb-1 text-[9px] font-semibold uppercase tracking-[0.2em]"
             >
-              Discover The Edit
+              {rosyEdit.ctaLabel}
             </a>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* Pop-Ups */}
       <section

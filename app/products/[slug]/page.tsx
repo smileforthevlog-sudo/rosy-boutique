@@ -130,8 +130,9 @@ export default async function ProductPage({
               image: primaryImage?.url || "",
               availability_status: product.availability_status,
               inventory_quantity: product.inventory_quantity,
+              variants: product.variants,
             }}
-            sizes={["XS", "S", "M", "L"]}
+            variants={product.variants}
           />
 
           <div className="mt-10 border-t border-black/10">

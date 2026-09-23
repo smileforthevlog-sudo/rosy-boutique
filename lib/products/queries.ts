@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import type {
   ProductImage,
+  ProductVariant,
   StorefrontCategory,
   StorefrontProduct,
 } from "@/lib/products/types";
@@ -9,10 +10,12 @@ import type {
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 type CategoryRow = Database["public"]["Tables"]["categories"]["Row"];
 type ProductImageRow = Database["public"]["Tables"]["product_images"]["Row"];
+type ProductVariantRow = Database["public"]["Tables"]["product_variants"]["Row"];
 
 type ProductWithRelations = ProductRow & {
   categories: Pick<CategoryRow, "id" | "name" | "slug"> | null;
   product_images: ProductImageRow[];
+  product_variants: ProductVariantRow[];
 };
 
 const productSelect = `
@@ -33,6 +36,7 @@ const productSelect = `
   updated_at,
   categories (id, name, slug),
   product_images (id, storage_path, alt_text, sort_order, created_at, product_id)
+  , product_variants (id, product_id, name, sku, inventory_quantity, active, sort_order, created_at, updated_at)
 `;
 
 function toStorefrontProduct(
@@ -67,6 +71,17 @@ function toStorefrontProduct(
     availability_status: product.availability_status,
     featured: product.featured,
     images,
+    variants: [...product.product_variants]
+      .filter((variant) => variant.active)
+      .sort((first, second) => first.sort_order - second.sort_order)
+      .map((variant): ProductVariant => ({
+        id: variant.id,
+        name: variant.name,
+        sku: variant.sku,
+        inventory_quantity: variant.inventory_quantity,
+        active: variant.active,
+        sort_order: variant.sort_order,
+      })),
   };
 }
 

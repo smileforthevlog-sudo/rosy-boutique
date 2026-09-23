@@ -13,6 +13,15 @@ export type ProductImage = {
   sortOrder: number;
 };
 
+export type ProductVariant = {
+  id: string;
+  name: string;
+  sku: string | null;
+  inventory_quantity: number;
+  active: boolean;
+  sort_order: number;
+};
+
 export type StorefrontProduct = {
   id: string;
   slug: string;
@@ -26,6 +35,7 @@ export type StorefrontProduct = {
   availability_status: ProductAvailability;
   featured: boolean;
   images: ProductImage[];
+  variants: ProductVariant[];
 };
 
 export type StorefrontCategory = ProductCategory & {
@@ -34,16 +44,20 @@ export type StorefrontCategory = ProductCategory & {
 };
 
 export function isProductPurchasable(
-  product: Pick<StorefrontProduct, "availability_status" | "inventory_quantity">,
+  product: Pick<StorefrontProduct, "availability_status" | "inventory_quantity" | "variants">,
 ) {
+  const inventory = product.variants.length > 0
+    ? product.variants.reduce((sum, variant) => sum + variant.inventory_quantity, 0)
+    : product.inventory_quantity;
+
   return (
     product.availability_status === "in_stock" &&
-    product.inventory_quantity > 0
+    inventory > 0
   );
 }
 
 export function getProductAvailabilityLabel(
-  product: Pick<StorefrontProduct, "availability_status" | "inventory_quantity">,
+  product: Pick<StorefrontProduct, "availability_status" | "inventory_quantity" | "variants">,
 ) {
   if (product.availability_status === "coming_soon") {
     return "Coming Soon";
@@ -51,7 +65,9 @@ export function getProductAvailabilityLabel(
 
   if (
     product.availability_status === "sold_out" ||
-    product.inventory_quantity <= 0
+    (product.variants.length > 0
+      ? product.variants.reduce((sum, variant) => sum + variant.inventory_quantity, 0)
+      : product.inventory_quantity) <= 0
   ) {
     return "Sold Out";
   }
